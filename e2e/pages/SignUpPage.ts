@@ -3,53 +3,74 @@ import { Page, expect } from '@playwright/test';
 import { handlePrivacyDialog } from '../../helpers/helpers';
 
 export class SignUpPage {
-  readonly page: Page;
-  readonly mainSignUpElement;
-  readonly signUpForm;
+  readonly pageUrl: string = 'https://circula-qa-challenge.vercel.app/users/sign_up';
 
-  constructor(page: Page) {
-    this.page = page;
-    this.mainSignUpElement = page.locator('main[data-testid="signup"]');
-    this.signUpForm = this.mainSignUpElement.locator('form[name="signup"]');
+  constructor(public readonly page: Page) {}
+
+  get locators() {
+    const main = this.page.getByTestId('signup');
+    const form = main.locator('form[name="signup"]');
+    return {
+      mainElement: main,
+      form: form,
+      // Step One locators
+      emailInput: form.locator('input[name="email"]'),
+      passwordInput: form.locator('input[name="password"]'),
+      acceptTosCheckbox: form.locator('input[name="acceptTos"]'),
+      formSubmitButton: form.locator('button[type="submit"]'),
+      // Step Two locators 
+      firstnameInput: form.locator('input[name="firstname"]'),
+      lastnameInput: form.locator('input[name="lastname"]'),
+      phoneInput: form.locator('input[name="phoneNumber"]'),
+      // Step Three locators
+      organizationNameInput: this.page.locator('input[name="organizationName"]'),
+      countryInput: this.page.locator('input[name="country"]'),
+      countryOptionSweden: this.page.getByRole('option', { name: 'Sweden' }),
+      createAccountButton: this.page.getByRole('button', { name: 'Create an account' }),
+    };
   }
 
   async waitForLoad() {
-    // Verify that the sign-up page and form are visible.
-    // ToDo: remove redundant validation after consultation
-    await expect(this.mainSignUpElement).toBeVisible();
-    await expect(this.signUpForm).toBeVisible();
-    // In case the privacy dialog appears here, handle it.
+    await expect(this.locators.mainElement).toBeVisible();
+    await expect(this.locators.form).toBeVisible();
+    await handlePrivacyDialog(this.page);
+  }
+
+  async navigateToSignUp() {
+    await this.page.goto(this.pageUrl);
     await handlePrivacyDialog(this.page);
   }
 
   async fillStepOne(email: string, password: string) {
-    await this.signUpForm.locator('input[name="email"]').fill(email);
-    await this.signUpForm.locator('input[name="password"]').fill(password);
-    // Check the Terms and Conditions checkbox.
-    await this.signUpForm.locator('input[name="acceptTos"]').check({ force: true });
-    // Click the button to go to the next step.
-    await this.signUpForm.locator('button[type="submit"]').click();
+    await this.locators.emailInput.fill(email);
+    await this.locators.passwordInput.fill(password);
+    await expect(this.locators.acceptTosCheckbox).toBeVisible();
+    await this.locators.acceptTosCheckbox.check({ force: true });
+    await this.locators.formSubmitButton.click();
   }
 
   async fillStepTwo(firstname: string, lastname: string, phone: string) {
-    await this.signUpForm.locator('input[name="firstname"]').fill(firstname);
-    await this.signUpForm.locator('input[name="lastname"]').fill(lastname);
-    await this.signUpForm.locator('input[name="phoneNumber"]').fill(phone);
-    // Click the button to proceed.
-    await this.signUpForm.locator('button[type="submit"]').click();
+    await this.locators.firstnameInput.fill(firstname);
+    await this.locators.lastnameInput.fill(lastname);
+    await this.locators.phoneInput.fill(phone);
+    await this.locators.formSubmitButton.click();
   }
 
-  async fillStepThree() {
-    // Fill in the organization name.
-    await this.page.locator('input[name="organizationName"]').fill('testCompanyname');
-    // Open the country dropdown and select "Sweden".
-    await this.page.locator('input[name="country"]').click();
-    await this.page.getByRole('option', { name: 'Sweden' }).click({ force: true });
+  async fillStepThreeBySelection() {
+    await this.locators.organizationNameInput.fill('testCompanyname');
+    await this.locators.countryInput.click();
+  }
 
-    // The following interactions represent additional steps.
-    // await this.page.locator('input[name="hdyhau"]').click();
-    // await this.page.getByText('Event').click();
-    // await this.page.getByRole('textbox', { name: 'At which event did you hear' }).fill('Lola');
-    await this.page.getByRole('button', { name: 'Create an account' }).click();
+  async selectSwedenAsCountry(){
+    await this.locators.countryOptionSweden.click({ force: true });
+    await this.locators.createAccountButton.click();
+  }
+
+  async fillStepThreeByInput(country: string ) {
+    await this.locators.organizationNameInput.fill('testCompanyname');
+    await this.locators.countryInput.click();
+    await this.locators.countryInput.fill(country);
+    await this.locators.countryInput.press('Enter');
+    await this.locators.createAccountButton.click();
   }
 }

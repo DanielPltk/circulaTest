@@ -11,12 +11,9 @@ export async function handlePrivacyDialog(page: Page, timeout = 2000): Promise<v
   const privacyDialog = page.locator('div[data-testid="uc-default-wall"]');
 
   try {
-    // Wait briefly for the dialog to appear.
     await privacyDialog.waitFor({ state: 'visible', timeout });
-    // If the dialog appears, click the "Accept All" button.
     const acceptButton = privacyDialog.locator('button[data-testid="uc-accept-all-button"]');
     await acceptButton.click();
-    // Wait for the dialog to be hidden.
     await privacyDialog.waitFor({ state: 'hidden', timeout });
     console.log('Privacy dialog was handled.');
   } catch (error) {
