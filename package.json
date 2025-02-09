@@ -4,9 +4,9 @@
   "main": "index.js",
   "scripts": {
     "ui": "npx playwright test --headed",
-    "chrome": "npx playwright test e2e/sign-up.spec.ts --project=chromium  --headed",
+    "chrome": "npx playwright test e2e/**.spec.ts --project=chromium  --headed",
     "firefox": "npx playwright test --project=firefox --headed",
-    "debug":"npx playwright test e2e/create-account.spec.ts --project=chromium --debug",
+    "debug":"npx playwright test e2e/sign-in.spec.ts --project=chromium --debug",
     "testing": "npx playwright test e2e/example.spec.ts --headed --project=chromium --debug"
   },
   "keywords": [],
